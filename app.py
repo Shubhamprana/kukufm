@@ -19,6 +19,17 @@ from run import load_env
 
 load_env()  # picks up GEMINI_API_KEY etc. from .env when running locally
 
+# Community Cloud stores deployment secrets in st.secrets rather than a local
+# .env file. The pipeline reads standard environment variables, so mirror only
+# the provider keys into the running process when they have been configured.
+for _secret_name in ("GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+    try:
+        _secret_value = st.secrets.get(_secret_name)
+    except Exception:
+        _secret_value = None
+    if _secret_value:
+        os.environ.setdefault(_secret_name, str(_secret_value))
+
 HERE = Path(__file__).resolve().parent
 st.set_page_config(page_title="Promo Finder", page_icon="🎬", layout="wide", initial_sidebar_state="collapsed")
 
